@@ -13,15 +13,17 @@ app.get('/send', function (req, res) {
     let token = req.query.token;
     let content = req.query.content;
     let channel = req.query.channel;
+    let event = req.query.event;
     let secret_token = 'asdasd';
 
     if (secret_token === token && content !== '') {
-        io.emit(channel, content);
+        io.to(channel).emit(event, content);
         res.send('Notificacion enviada');
     } else {
         res.send('No autorizado');
     }
 });
+
 
 const options = {
     cors: {
