@@ -45,7 +45,7 @@ io.on("connection", function (socket) {
 
     socket.on('join', (channel) => {
         socket.join(channel);
-        sockets[socket.id] = channel;
+        sockets[socket.id] = socket.rooms;
         socket.emit('log', 'Se ha unido a la sala: ' + channel);
         if (typeof count_channels[channel] === "undefined") {
             count_channels[channel] = 0;
@@ -55,8 +55,12 @@ io.on("connection", function (socket) {
 
     socket.on("disconnect", (reason) => {
         if (typeof sockets[socket.id] !== "undefined") {
-            let channel = sockets[socket.id];
-            count_channels[channel]--;
+            let channels = sockets[socket.id];
+
+            for (let channel of channels) {
+                count_channels[channel]--;
+            }
+
             delete sockets[socket.id];
         }
     });
@@ -66,3 +70,4 @@ io.on("connection", function (socket) {
 httpServer.listen(3001, function () {
     console.log("Servidor corriendo en http://localhost:3001");
 });
+

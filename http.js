@@ -2,6 +2,7 @@ var fs = require('fs');
 var express = require("express");
 const cors = require('cors');
 var body_parser = require('body-parser');
+const {channel} = require('diagnostics_channel');
 var app = express();
 app.use(body_parser.urlencoded({extended: true}));
 var http = require('http').Server(app);
@@ -38,7 +39,7 @@ io.on("connection", function (socket) {
 
     socket.on('join', (channel) => {
         socket.join(channel);
-        sockets[socket.id] = channel;
+        sockets[socket.id] = socket.rooms;
         socket.emit('log', 'Se ha unido a la sala: ' + channel);
         if (typeof count_channels[channel] === "undefined") {
             count_channels[channel] = 0;
@@ -48,8 +49,12 @@ io.on("connection", function (socket) {
 
     socket.on("disconnect", (reason) => {
         if (typeof sockets[socket.id] !== "undefined") {
-            let channel = sockets[socket.id];
-            count_channels[channel]--;
+            let channels = sockets[socket.id];
+
+            for (let channel of channels) {
+                count_channels[channel]--;
+            }
+
             delete sockets[socket.id];
         }
     });
